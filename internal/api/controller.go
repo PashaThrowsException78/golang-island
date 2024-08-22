@@ -60,3 +60,23 @@ func (controller IslandController) GetIslandResult(w http.ResponseWriter, r *htt
 		controller.log.Warn("Error encoding response", "error", err)
 	}
 }
+
+func (controller IslandController) IsReady(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(err.Error()))
+		return
+	}
+
+	ready, err := controller.service.IsReady(id)
+
+	exists := err == nil
+
+	response := map[string]bool{"ready": ready, "exists": exists}
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		controller.log.Warn("Error encoding response", "error", err)
+	}
+}

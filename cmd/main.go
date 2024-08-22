@@ -63,6 +63,10 @@ func main() {
 		controller.GetIslandResult(w, r)
 	})
 
+	router.Get("/algorithm/island/ready/{id}", func(w http.ResponseWriter, r *http.Request) {
+		controller.IsReady(w, r)
+	})
+
 	<-done
 	log.Info("stopping server")
 

@@ -13,6 +13,8 @@ type IslandService interface {
 	PutTask(request dto.CalculateIslandsRequest) error
 
 	GetResult(islandId int) (int, error)
+
+	IsReady(islandId int) (bool, error)
 }
 
 type IslandServiceImpl struct {
@@ -49,6 +51,11 @@ func (service *IslandServiceImpl) PutTask(request dto.CalculateIslandsRequest) e
 func (service *IslandServiceImpl) calculate(matrix [][]bool, id int) {
 	service.log.Info("start calculation for id=" + strconv.Itoa(id))
 
+	service.repo.PutIfEmpty(
+		id,
+		storage.Data{IslandCount: -1},
+	)
+
 	rows := len(matrix)
 	cols := len(matrix[0])
 	visited := make([][]bool, rows)
@@ -66,7 +73,7 @@ func (service *IslandServiceImpl) calculate(matrix [][]bool, id int) {
 		}
 	}
 
-	service.repo.PutIfEmpty(
+	service.repo.Put(
 		id,
 		storage.Data{IslandCount: count, CalculationDate: time.Now()},
 	)
@@ -83,6 +90,19 @@ func (service *IslandServiceImpl) GetResult(id int) (int, error) {
 	}
 
 	return result.IslandCount, err
+}
+
+func (service *IslandServiceImpl) IsReady(id int) (bool, error) {
+
+	result, err := service.repo.GetById(id)
+
+	if err != nil {
+		return false, err
+	} else if result.IslandCount == -1 {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func dfs(matrix, visited [][]bool, i, j, rows, cols int) {
