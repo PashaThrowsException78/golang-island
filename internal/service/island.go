@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"golang-island/internal/data"
 	"golang-island/internal/dto"
 	"golang-island/internal/storage"
 	"golang.org/x/exp/slog"
@@ -53,7 +54,7 @@ func (service *IslandServiceImpl) calculate(matrix [][]bool, id int) {
 
 	service.repo.PutIfEmpty(
 		id,
-		storage.Data{IslandCount: -1},
+		data.Data{IslandCount: -1},
 	)
 
 	rows := len(matrix)
@@ -75,7 +76,7 @@ func (service *IslandServiceImpl) calculate(matrix [][]bool, id int) {
 
 	service.repo.Put(
 		id,
-		storage.Data{IslandCount: count, CalculationDate: time.Now()},
+		data.Data{IslandCount: count, CalculationDate: time.Now()},
 	)
 
 	service.log.Info("end calculation for id=" + strconv.Itoa(id) + ", result=" + strconv.Itoa(count))

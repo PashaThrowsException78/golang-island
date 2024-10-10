@@ -2,6 +2,7 @@ package storage
 
 import (
 	"errors"
+	"golang-island/internal/data"
 	"golang.org/x/exp/slog"
 	"sync"
 )
@@ -44,22 +45,22 @@ func (store *ConcurrentMap[K, V]) GetAll() map[K]V {
 }
 
 type Repository interface {
-	PutIfEmpty(id int, data Data) bool
+	PutIfEmpty(id int, data data.Data) bool
 
-	Put(id int, data Data)
+	Put(id int, data data.Data)
 
 	ExistsById(id int) bool
 
-	GetById(id int) Data
+	GetById(id int) data.Data
 }
 
 type MockRepository struct {
-	store *ConcurrentMap[int, Data]
+	store *ConcurrentMap[int, data.Data]
 
 	log *slog.Logger
 }
 
-func (repo *MockRepository) PutIfEmpty(id int, data Data) bool {
+func (repo *MockRepository) PutIfEmpty(id int, data data.Data) bool {
 	if _, exists := repo.store.Get(id); exists {
 		return false // элемент уже существует, не добавляем
 	}
@@ -68,7 +69,7 @@ func (repo *MockRepository) PutIfEmpty(id int, data Data) bool {
 	return true
 }
 
-func (repo *MockRepository) Put(id int, data Data) {
+func (repo *MockRepository) Put(id int, data data.Data) {
 
 	repo.store.Set(id, data)
 }
@@ -82,19 +83,19 @@ func (repo *MockRepository) ExistsById(id int) bool {
 	return false
 }
 
-func (repo *MockRepository) GetById(id int) (Data, error) {
+func (repo *MockRepository) GetById(id int) (data.Data, error) {
 
 	if data, exists := repo.store.Get(id); exists {
 		return data, nil
 	}
 
-	return Data{}, errors.New("not found")
+	return data.Data{}, errors.New("not found")
 }
 
 func NewRepo(log *slog.Logger) *MockRepository {
 	return &MockRepository{
-		store: &ConcurrentMap[int, Data]{
-			m: make(map[int]Data),
+		store: &ConcurrentMap[int, data.Data]{
+			m: make(map[int]data.Data),
 		},
 		log: log,
 	}
